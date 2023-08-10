@@ -40,7 +40,6 @@ svg.append("g")
         .selectAll(".tick line")
         .attr("stroke-width", 0.5); 
 
-
 svg.append("g")
     .attr("class", "grid")
     .call(d3.axisLeft(yScale)
@@ -51,7 +50,7 @@ svg.append("g")
 
 // Add xScale-axis
 svg.append("g")
-    .attr("transform", `translate(0, ${height})`) // yScale positioning is inverted in d3
+    .attr("transform", `translate(0, ${height})`) 
     .call(d3.axisBottom(xScale))
     .style("font-size", "16px");
 
@@ -91,44 +90,42 @@ var chartArea = svg.append("g")
     .attr("clip-path", "url(#chart-clip)");
 
 // Generate Data
-function equiDataCalc(comp) {
+var initialData = [];
+const step = 0.0001;
+const qVal = 0.5;
+const refluxRatio = 0.5;
+const distillatePurity = 0.9;
+const feedComp = 0.55;
+
+function calculateEquilVal(comp) {
     return Math.pow(1 - Math.pow(comp - 1, 2), 0.5);
 }
 
-var equilData = [];
-var step = 0.0001;
-var qVal = 0.5;
-var refluxRatio = 3;
-var distillatePurity = 0.9;
-var distillateRate = 50;
-var inletRate = 100;
-
-const xF = 0.55;
-
-for (var xVal = 0; xVal < 1; xVal += step) {
-    var dataPoint = {
-        // composition, vapour curve, liquid curve
-        compVal: xVal,
-
-        equiDataVal: equiDataCalc(xVal),
-        tolVal: xVal * 0.3 + 0.6,
-        bolVal: xVal * 2.3 - 0.1,
-        line45Val: xVal,
-        qLineVal: xVal * (qVal) / (qVal - 1) + (xF) / (1 - qVal)
-    };
-
-    equilData.push(dataPoint);
+function calculateTolVal(r, comp, xD) {
+    return comp * (r) / (r + 1) + (xD) / (1 + r)
 }
 
-function generateQLine(q, dataPoints) {
+function calculateBolVal(comp) {
+    return 2.3 * comp - 0.1
+}
+
+function calculateQVal(q, comp, xF) {
+    return comp * (q) / (q - 1) + (xF) / (1 - q)
+}
+
+function updateTolLine(r, compVals, xD) {
     var newData = []
 
-    for (dataPoint of dataPoints) {
-        calculatedQ = dataPoint.compVal * (q) / (q - 1) + (xF) / (1 - q)
+    for (compPoint of compVals) {
+        tolPoint = calculateTolVal(r, compPoint, xD)
 
         var newDataPoint = {
-            qLineVal: calculatedQ,
-            compVal: dataPoint.compVal
+            tolVal: tolPoint,
+            compVal: compPoint
+        }
+
+        if (isNaN(tolPoint)) {
+            console.log("NaN detected in tolPoint calculation:");
         }
 
         newData.push(newDataPoint);
@@ -136,6 +133,39 @@ function generateQLine(q, dataPoints) {
 
     return newData
 }
+
+function updateQLine(q, compVals, xF) {
+    var newData = []
+
+    for (compPoint of compVals) {
+        qPoint = calculateQVal(q, compPoint, xF)
+
+        var newDataPoint = {
+            qLineVal: qPoint,
+            compVal: compPoint
+        }
+
+        newData.push(newDataPoint);
+    }
+
+    return newData
+}
+
+for (var xVal = 0; xVal < 1; xVal += step) {
+    var dataPoint = {
+
+        compVal: xVal,
+        equiDataVal: calculateEquilVal(xVal),
+        tolVal: calculateTolVal(refluxRatio, xVal, distillatePurity),
+        bolVal: calculateBolVal(xVal),
+        line45Val: xVal,
+        qLineVal: calculateQVal(qVal, xVal, feedComp)
+    };
+
+    initialData.push(dataPoint);
+}
+
+compValArray = initialData.map(dataPoint => dataPoint.compVal)
 
 // Define line functions
 var equiLine = d3.line()
@@ -160,7 +190,7 @@ var bolLine = d3.line()
 
 // Add equilibrium line to chartArea
 chartArea.append("path")
-    .datum(equilData)
+    .datum(initialData)
     .attr("class", "equi-line")
     .attr("fill", "none")
     .style("stroke", "black")
@@ -169,8 +199,8 @@ chartArea.append("path")
 
 // Add 45-line to chartArea
 chartArea.append("path")
-    .datum(equilData)
-    .attr("class", "line")
+    .datum(initialData)
+    .attr("class", "line-45")
     .attr("fill", "none")
     .style("stroke", "black")
     .attr("stroke-width", 1.5)
@@ -178,17 +208,17 @@ chartArea.append("path")
 
 // Add q-line to chartArea
 chartArea.append("path")
-    .datum(equilData)
+    .datum(initialData)
     .attr("class", "q-line")
     .attr("fill", "none")
     .style("stroke", "red")
     .attr("stroke-width", 2)
-    .style("filter", "url(#glow)") // Apply the glow effect
+    .style("filter", "url(#glow)")
     .attr("d", qLine);
 
 // Add ToL to chartArea
 chartArea.append("path")
-    .datum(equilData)
+    .datum(initialData)
     .attr("class", "tol-line")
     .attr("fill", "none")
     .style("stroke", "black")
@@ -198,75 +228,13 @@ chartArea.append("path")
 
 // Add BoL to charArea
 chartArea.append("path")
-    .datum(equilData)
-    .attr("class", "line")
+    .datum(initialData)
+    .attr("class", "bol-line")
     .attr("fill", "none")
     .style("stroke", "black")
     .style("stroke-dasharray", "8, 12")  // Set the dash pattern (4 units of line, 4 units of gap)
     .attr("stroke-width", 2)
     .attr("d", bolLine);
-
-var qSlider = document.getElementById("q-slider");
-var qValueSpan = document.getElementById("q-value");
-
-qSlider.addEventListener("input", function() {
-    // Get the new q value from the slider
-    var newQValue = parseFloat(qSlider.value);
-
-    // Update the q value display
-    qValueSpan.textContent = newQValue.toFixed(2);
-
-    var newQLineData = generateQLine(newQValue, equilData)
-
-    var intersectPoint = findTolEquiIntersect(equilData);
-
-    var minReflux = checkMinReflux(intersectPoint, equilData.map(dataPoint => dataPoint.compVal), newQLineData.map(dataPoint => dataPoint.qLineVal));
-
-    var isGlowing = minReflux;
-
-    chartArea.select(".q-line")
-        .datum(newQLineData)
-        .attr("d", qLine);
-
-    chartArea.select(".equi-line")
-        .style("filter", isGlowing ? "url(#glow)" : "none")
-        .style("stroke", isGlowing ? "red" : "black")
-    
-    chartArea.select(".tol-line")
-        .style("filter", isGlowing ? "url(#glow)" : "none")
-        .style("stroke", isGlowing ? "red" : "black")
-});
-
-function findTolEquiIntersect(data) {
-    var minDistance = 2;
-
-    for (dataPoint of data) {
-        var lineDistance = Math.abs(dataPoint.tolVal - dataPoint.equiDataVal);
-
-        if (lineDistance < minDistance) {
-            minDistance = lineDistance;
-            var yVal = dataPoint.tolVal;
-            var xVal = dataPoint.compVal
-        }
-    }
-
-    return {
-        yOrdinate: yVal, 
-        xOrdinate: xVal
-    }
-}
-
-function checkMinReflux(point, compData, qData) {
-
-    var index = compData.indexOf(point.xOrdinate)
-    var qDistance = Math.abs(point.yOrdinate - qData[index])
-
-    if (qDistance < 0.0075) {
-        return true;
-    } else {
-        return false;
-    }
-}
 
 // Define the filter for the glow effect
 var glowFilter = svg.append("defs")
@@ -286,4 +254,84 @@ var feMerge = glowFilter.append("feMerge");
 feMerge.append("feMergeNode")
     .attr("in", "coloredBlur");
 feMerge.append("feMergeNode")
-    .attr("in", "SourceGraphic");
+    .attr("in", "SourceGraphic");    
+
+// Obtain slider information
+var qSlider = document.getElementById("q-slider");
+var qValueSpan = document.getElementById("q-value");
+
+var refluxSlider = document.getElementById("reflux-slider");
+var refluxValueSpan = document.getElementById("reflux-value");
+
+var puritySlider = document.getElementById("purity-slider");
+var purityValueSpan = document.getElementById("purity-value");
+
+
+qSlider.addEventListener("input", handleSliderInput);
+refluxSlider.addEventListener("input", handleSliderInput);
+puritySlider.addEventListener("input", handleSliderInput);
+
+function handleSliderInput() {
+    var newQValue = parseFloat(qSlider.value);
+    var newRefluxRatio = parseFloat(refluxSlider.value);
+    var newPurity = parseFloat(puritySlider.value);
+
+    // Update the slider value display
+    qValueSpan.textContent = newQValue.toFixed(2);
+    refluxValueSpan.textContent = newRefluxRatio.toFixed(2);
+    purityValueSpan.textContent = newPurity.toFixed(2);
+
+    var newQLineData = updateQLine(newQValue, compValArray, feedComp)
+    var newTolLineData = updateTolLine(newRefluxRatio, compValArray, newPurity)
+
+    var intersectPoint = findIntersect(initialData, newTolLineData);
+
+    var minReflux = checkMinReflux(intersectPoint, compValArray, newQLineData.map(dataPoint => dataPoint.qLineVal));
+
+    var isGlowing = minReflux;
+
+    chartArea.select(".q-line")
+        .datum(newQLineData)
+        .attr("d", qLine);
+
+    chartArea.select(".equi-line")
+        .style("filter", isGlowing ? "url(#glow)" : "none")
+        .style("stroke", isGlowing ? "red" : "black")
+    
+    chartArea.select(".tol-line")
+        .datum(newTolLineData)
+        .attr("d", tolLine)
+        .style("filter", isGlowing ? "url(#glow)" : "none")
+        .style("stroke", isGlowing ? "red" : "black")
+};
+
+function findIntersect(equiData, tolData) {
+    var minDistance = 2;
+
+    for (let index = 0; index < equiData.length; index++) {
+        var lineDistance = Math.abs(tolData[index].tolVal - equiData[index].equiDataVal);
+
+        if (lineDistance < minDistance) {
+            minDistance = lineDistance;
+            var yVal = tolData[index].tolVal;
+            var xVal = tolData[index].compVal;
+        }
+    }
+
+    return {
+        yOrdinate: yVal, 
+        xOrdinate: xVal
+    }
+}
+
+function checkMinReflux(point, compData, qData) {
+
+    var index = compData.indexOf(point.xOrdinate)
+    var qDistance = Math.abs(point.yOrdinate - qData[index])
+
+    if (qDistance < 0.01) {
+        return true;
+    } else {
+        return false;
+    }
+}
