@@ -221,7 +221,7 @@ chartArea.append("path")
     .datum(initialData)
     .attr("class", "tol-line")
     .attr("fill", "none")
-    .style("stroke", "black")
+    .style("stroke", "blue")
     .style("stroke-dasharray", "8, 12")  
     .attr("stroke-width", 2)
     .attr("d", tolLine);
@@ -231,7 +231,7 @@ chartArea.append("path")
     .datum(initialData)
     .attr("class", "bol-line")
     .attr("fill", "none")
-    .style("stroke", "black")
+    .style("stroke", "blue")
     .style("stroke-dasharray", "8, 12")  // Set the dash pattern (4 units of line, 4 units of gap)
     .attr("stroke-width", 2)
     .attr("d", bolLine);
@@ -302,13 +302,13 @@ function handleSliderInput() {
         .datum(newTolLineData)
         .attr("d", tolLine)
         .style("filter", isGlowing ? "url(#glow)" : "none")
-        .style("stroke", isGlowing ? "red" : "black")
+        .style("stroke", isGlowing ? "red" : "blue")
 };
 
 function findIntersect(equiData, tolData) {
     var minDistance = 2;
 
-    for (let index = 0; index < equiData.length; index++) {
+    for (let index = 0; index < equiData.length - 10; index++) { // Need to prevent code from checking ToL (1,1) intersection at purity == 1 so last 10 indices are a buffer
         var lineDistance = Math.abs(tolData[index].tolVal - equiData[index].equiDataVal);
 
         if (lineDistance < minDistance) {
