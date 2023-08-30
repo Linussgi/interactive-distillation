@@ -92,9 +92,9 @@ var chartArea = svg.append("g")
 // Generate Data
 var initialData = [];
 const step = 0.0001;
-const qVal = 0.5;
-const refluxRatio = 0.5;
-const distillatePurity = 0.9;
+const initialQVal = 0.5;
+const initialRefluxRatio = 0.5;
+const initialPurity = 0.9;
 const feedComp = 0.55;
 
 function calculateEquilVal(comp) {
@@ -124,10 +124,6 @@ function updateTolLine(r, compVals, xD) {
             compVal: compPoint
         }
 
-        if (isNaN(tolPoint)) {
-            console.log("NaN detected in tolPoint calculation:");
-        }
-
         newData.push(newDataPoint);
     }
 
@@ -136,9 +132,14 @@ function updateTolLine(r, compVals, xD) {
 
 function updateQLine(q, compVals, xF) {
     var newData = []
+    if (q == 1 || q == 0){
+        var offset = 0.0005
+    } else {
+        var offset = 0
+    }
 
     for (compPoint of compVals) {
-        qPoint = calculateQVal(q, compPoint, xF)
+        qPoint = calculateQVal(q + offset, compPoint, xF)
 
         var newDataPoint = {
             qLineVal: qPoint,
@@ -156,10 +157,10 @@ for (var xVal = 0; xVal < 1; xVal += step) {
 
         compVal: xVal,
         equiDataVal: calculateEquilVal(xVal),
-        tolVal: calculateTolVal(refluxRatio, xVal, distillatePurity),
+        tolVal: calculateTolVal(initialRefluxRatio, xVal, initialPurity),
         bolVal: calculateBolVal(xVal),
         line45Val: xVal,
-        qLineVal: calculateQVal(qVal, xVal, feedComp)
+        qLineVal: calculateQVal(initialQVal, xVal, feedComp)
     };
 
     initialData.push(dataPoint);
@@ -231,7 +232,7 @@ chartArea.append("path")
     .datum(initialData)
     .attr("class", "bol-line")
     .attr("fill", "none")
-    .style("stroke", "blue")
+    .style("stroke", "black")
     .style("stroke-dasharray", "8, 12")  // Set the dash pattern (4 units of line, 4 units of gap)
     .attr("stroke-width", 2)
     .attr("d", bolLine);
@@ -266,17 +267,19 @@ var refluxValueSpan = document.getElementById("reflux-value");
 var puritySlider = document.getElementById("purity-slider");
 var purityValueSpan = document.getElementById("purity-value");
 
+const paragraph1 = document.getElementById("paragraph1");
+const paragraph2 = document.getElementById("paragraph2");
+const paragraph3 = document.getElementById("paragraph3");
 
-qSlider.addEventListener("input", handleSliderInput);
-refluxSlider.addEventListener("input", handleSliderInput);
-puritySlider.addEventListener("input", handleSliderInput);
+qSlider.addEventListener("input", sliderEventHandler);
+refluxSlider.addEventListener("input", sliderEventHandler);
+puritySlider.addEventListener("input", sliderEventHandler);
 
-function handleSliderInput() {
+function sliderEventHandler() {
     var newQValue = parseFloat(qSlider.value);
     var newRefluxRatio = parseFloat(refluxSlider.value);
     var newPurity = parseFloat(puritySlider.value);
 
-    // Update the slider value display
     qValueSpan.textContent = newQValue.toFixed(2);
     refluxValueSpan.textContent = newRefluxRatio.toFixed(2);
     purityValueSpan.textContent = newPurity.toFixed(2);
@@ -303,12 +306,22 @@ function handleSliderInput() {
         .attr("d", tolLine)
         .style("filter", isGlowing ? "url(#glow)" : "none")
         .style("stroke", isGlowing ? "red" : "blue")
+    
+    var newTolValArray = newTolLineData.map(dataPoint => dataPoint.tolVal)
+    var newQValArray = newQLineData.map(dataPoint => dataPoint.qLineVal)
+
+    var intersectIndex = compValArray.indexOf(intersectPoint.xOrdinate)
+
+    var qPos = newQValArray[intersectIndex]
+    var tolPos = newTolValArray[intersectIndex]
+            
+    changeDisplayText(qPos, tolPos, minReflux)
 };
 
 function findIntersect(equiData, tolData) {
     var minDistance = 2;
 
-    for (let index = 0; index < equiData.length - 10; index++) { // Need to prevent code from checking ToL (1,1) intersection at purity == 1 so last 10 indices are a buffer
+    for (let index = 0; index < equiData.length - 10; index++) { // Prevents code from checking ToL (1,1) intersection at purity == 1 so last 10 indices are a buffer
         var lineDistance = Math.abs(tolData[index].tolVal - equiData[index].equiDataVal);
 
         if (lineDistance < minDistance) {
@@ -317,7 +330,6 @@ function findIntersect(equiData, tolData) {
             var xVal = tolData[index].compVal;
         }
     }
-
     return {
         yOrdinate: yVal, 
         xOrdinate: xVal
@@ -329,9 +341,34 @@ function checkMinReflux(point, compData, qData) {
     var index = compData.indexOf(point.xOrdinate)
     var qDistance = Math.abs(point.yOrdinate - qData[index])
 
-    if (qDistance < 0.01) {
+    if (point.xOrdinate > 0.4) {
+        var tolerance = 0.04
+    } else {
+        var tolerance = 0.01
+    }
+
+    if (qDistance < tolerance) {
         return true;
     } else {
         return false;
+    }
+}
+
+function changeDisplayText(qVal, tolIntersect, atEdge) {
+    
+    if (qVal < tolIntersect && !atEdge) {
+        paragraph1.style.display = "block";
+        paragraph2.style.display = "none";
+        paragraph3.style.display = "none";
+
+        console.log("par 1 success")
+    } else if (qVal > tolIntersect && !atEdge) {
+        paragraph1.style.display = "none";
+        paragraph2.style.display = "block";
+        paragraph3.style.display = "none";
+    } else {
+        paragraph1.style.display = "none";
+        paragraph2.style.display = "none";
+        paragraph3.style.display = "block";
     }
 }

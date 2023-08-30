@@ -82,6 +82,10 @@ body {
     margin-bottom: 5px;
 }
 
+.paragraph{
+    display: none;
+}
+
 /* Add animation for the glow effect */
 @keyframes glowAnimation {
     0% {

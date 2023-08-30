@@ -17,7 +17,7 @@
             </div>
 
             <p>
-                This page provides a basic visulisation of a binary distillation equilibrium graph.
+                This page provides a basic visualisation of a binary distillation equilibrium graph.
             </p>
 
             <p>
@@ -25,13 +25,14 @@
             </p>
 
             <ul>
-                <li>The two black lines represent the equilibrium data and the 45-line</li>
-                <li>The blue dashed lines represent the top and bottom operating lines of the column</li>
+                <li>The solid black lines represent the equilibrium data and the 45-line</li>
+                <li>The dashed lines represent the top and bottom operating lines of the column</li>
                 <li>The red line represents the q-line which is determined by the feed condition</li>
             </ul>
 
             <p>
-                For the purpose of this page, the bottom operating line remains fixed and will not change with any of the maipulated variables.
+                System Information on the right will change as you move the sliders. For the purpose of this page, the bottom operating line remains fixed and will not change with 
+                any of the maipulated variables.  
             </p>
             
         </div>
@@ -64,7 +65,32 @@
         </div>
 
         <div class="right-section">
-            <!-- Content for the right section -->
+            <div class="center-content">
+                <h2>System Information</h2>
+            </div>
+
+            <div class="paragraph" id="paragraph1">
+                <ul>
+                    <li>This system is at the current reflux ratio is not feasible with this feed condition</li>
+                    <li>Notice how the <span style="color: red;">q-line</span> does not intersect <span style="color: blue;">top operating line</span> 
+                        within the equilibrium region, which is the area between the curved line and the 45-line</li>
+                </ul>
+            </div>
+            <div class="paragraph" id="paragraph2">
+                <ul>
+                    <li>This system at the current reflux ratio is feasible with this feed condition</li>
+                    <li>The <span style="color: red;">q-line</span> intersects the <span style="color: blue;">top operating line</span> within the equilibrium region which is 
+                        the area between the curved line and the 45-line</li>
+                    <li>The higher the reflux ratio is above the minimum, the lower the number of theoretical trays the system requires</li>
+                </ul>
+            </div>
+            <div class="paragraph" id="paragraph3">
+                <ul>
+                    <li>The system is now at its <span style="color: red;">minimum reflux</span> point at this feed condition</li>
+                    <li>In order for the distillate product to have the desired purity, the reflux ratio must be greater than or equal to the current value</li>
+                    <li>A reflux ratio of this value will yield the highest number of theoretical trays for this feed condition</li>
+                </ul>
+            </div>
         </div>
     </div>
 
