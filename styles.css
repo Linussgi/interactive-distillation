@@ -86,6 +86,10 @@ body {
     display: none;
 }
 
+#paragraph2{
+    display: block;
+}
+
 /* Add animation for the glow effect */
 @keyframes glowAnimation {
     0% {
@@ -100,9 +104,4 @@ body {
         filter: url(#glow);
         opacity: 0.8;
     }
-}
-
-/* Apply the animation to the q-line */
-.q-line {
-    animation: glowAnimation 2s infinite;
 }

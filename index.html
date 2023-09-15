@@ -21,7 +21,7 @@
             </p>
 
             <p>
-            You can manipulate the feed condition, reflux ratio and desired distillate purity of the lighter component using the sliders to see how the graph responds. 
+            You can manipulate the feed condition, reflux ratio and desired distillate purity (of the lighter component) using the sliders to see how the graph responds. 
             </p>
 
             <ul>
@@ -31,8 +31,7 @@
             </ul>
 
             <p>
-                System Information on the right will change as you move the sliders. For the purpose of this page, the bottom operating line remains fixed and will not change with 
-                any of the maipulated variables.  
+                System Information on the right will change as you move the sliders. For the purpose of this page, the bottom operating line remains fixed and cannot be manipulated.  
             </p>
             
         </div>
@@ -42,7 +41,7 @@
             <div id="slider-container">
                 <div class="slider-label">
                     <label for="q-slider">Value of q:</label>
-                    <span id="q-value" class="slider-value">0.5</span>
+                    <span id="q-value" class="slider-value">0.50</span>
                 </div>
                 <input type="range" min="-1.5" max="1.5" step="0.01" value="0.5" id="q-slider" class="slider">
             </div>
@@ -50,15 +49,15 @@
             <div id="slider-container">
                 <div class="slider-label">
                     <label for="reflux-slider">Reflux Ratio:</label>
-                    <span id="reflux-value" class="slider-value">0.5</span>
+                    <span id="reflux-value" class="slider-value">0.50</span>
                 </div>
-                <input type="range" min="0" max="5" step="0.01" value="0.5" id="reflux-slider" class="slider">
+                <input type="range" min="0.01" max="5" step="0.01" value="0.5" id="reflux-slider" class="slider">
             </div>
 
             <div id="slider-container">
                 <div class="slider-label">
                     <label for="purity-slider">Desired Distillate Purity:</label>
-                    <span id="purity-value" class="slider-value">0.9</span>
+                    <span id="purity-value" class="slider-value">0.90</span>
                 </div>
                 <input type="range" min="0" max="1" step="0.01" value="0.9" id="purity-slider" class="slider">
             </div>
@@ -79,7 +78,7 @@
             <div class="paragraph" id="paragraph2">
                 <ul>
                     <li>This system at the current reflux ratio is feasible with this feed condition</li>
-                    <li>The <span style="color: red;">q-line</span> intersects the <span style="color: blue;">top operating line</span> within the equilibrium region which is 
+                    <li>The <span style="color: red;">q-line</span> intersects the <span style="color: blue;">top operating line</span> within the equilibrium region, which is 
                         the area between the curved line and the 45-line</li>
                     <li>The higher the reflux ratio is above the minimum, the lower the number of theoretical trays the system requires</li>
                 </ul>

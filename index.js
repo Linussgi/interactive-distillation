@@ -113,6 +113,7 @@ function calculateQVal(q, comp, xF) {
     return comp * (q) / (q - 1) + (xF) / (1 - q)
 }
 
+// Calculate new ToL line data when slider is changed
 function updateTolLine(r, compVals, xD) {
     var newData = []
 
@@ -130,6 +131,7 @@ function updateTolLine(r, compVals, xD) {
     return newData
 }
 
+// Calculate new q-line line data when slider is changed
 function updateQLine(q, compVals, xF) {
     var newData = []
     if (q == 1 || q == 0){
@@ -166,7 +168,8 @@ for (var xVal = 0; xVal < 1; xVal += step) {
     initialData.push(dataPoint);
 }
 
-compValArray = initialData.map(dataPoint => dataPoint.compVal)
+// Composition data often useful to have as an array
+const compValArray = initialData.map(dataPoint => dataPoint.compVal)
 
 // Define line functions
 var equiLine = d3.line()
@@ -223,7 +226,7 @@ chartArea.append("path")
     .attr("class", "tol-line")
     .attr("fill", "none")
     .style("stroke", "blue")
-    .style("stroke-dasharray", "8, 12")  
+    .style("stroke-dasharray", "10, 10")  
     .attr("stroke-width", 2)
     .attr("d", tolLine);
 
@@ -233,7 +236,7 @@ chartArea.append("path")
     .attr("class", "bol-line")
     .attr("fill", "none")
     .style("stroke", "black")
-    .style("stroke-dasharray", "8, 12")  // Set the dash pattern (4 units of line, 4 units of gap)
+    .style("stroke-dasharray", "10, 10")  // Set the dash pattern (x units of line, y units of gap)
     .attr("stroke-width", 2)
     .attr("d", bolLine);
 
@@ -275,6 +278,7 @@ qSlider.addEventListener("input", sliderEventHandler);
 refluxSlider.addEventListener("input", sliderEventHandler);
 puritySlider.addEventListener("input", sliderEventHandler);
 
+// What runs when an event occurs
 function sliderEventHandler() {
     var newQValue = parseFloat(qSlider.value);
     var newRefluxRatio = parseFloat(refluxSlider.value);
@@ -284,13 +288,16 @@ function sliderEventHandler() {
     refluxValueSpan.textContent = newRefluxRatio.toFixed(2);
     purityValueSpan.textContent = newPurity.toFixed(2);
 
-    var newQLineData = updateQLine(newQValue, compValArray, feedComp)
-    var newTolLineData = updateTolLine(newRefluxRatio, compValArray, newPurity)
+    var newQLineData = updateQLine(newQValue, compValArray, feedComp);
+    var newTolLineData = updateTolLine(newRefluxRatio, compValArray, newPurity);
 
-    var intersectPoint = findIntersect(initialData, newTolLineData);
+    var newTolValArray = newTolLineData.map(dataPoint => dataPoint.tolVal);
+    var newQValArray = newQLineData.map(dataPoint => dataPoint.qLineVal);
 
-    var minReflux = checkMinReflux(intersectPoint, compValArray, newQLineData.map(dataPoint => dataPoint.qLineVal));
+    var qPos = findIntersect(initialData, newQValArray);
+    var tolPos = findIntersect(initialData, newTolValArray);
 
+    var minReflux = checkMinReflux(qPos, tolPos);
     var isGlowing = minReflux;
 
     chartArea.select(".q-line")
@@ -307,27 +314,25 @@ function sliderEventHandler() {
         .style("filter", isGlowing ? "url(#glow)" : "none")
         .style("stroke", isGlowing ? "red" : "blue")
     
-    var newTolValArray = newTolLineData.map(dataPoint => dataPoint.tolVal)
-    var newQValArray = newQLineData.map(dataPoint => dataPoint.qLineVal)
+    changeDisplayText(qPos.yOrdinate, tolPos.yOrdinate, minReflux)
 
-    var intersectIndex = compValArray.indexOf(intersectPoint.xOrdinate)
+    // var intersectIndex = compValArray.indexOf(intersectPoint.xOrdinate)
 
-    var qPos = newQValArray[intersectIndex]
-    var tolPos = newTolValArray[intersectIndex]
-            
-    changeDisplayText(qPos, tolPos, minReflux)
+    // var qPos = newQValArray[intersectIndex]
+    // var tolPos = newTolValArray[intersectIndex]
 };
 
-function findIntersect(equiData, tolData) {
+// Find where tol or q-line intersects equilibrium line
+function findIntersect(systemData, dataArray) {
     var minDistance = 2;
 
-    for (let index = 0; index < equiData.length - 10; index++) { // Prevents code from checking ToL (1,1) intersection at purity == 1 so last 10 indices are a buffer
-        var lineDistance = Math.abs(tolData[index].tolVal - equiData[index].equiDataVal);
+    for (let index = 0; index < systemData.length - 10; index++) { 
+        var lineDistance = Math.abs(dataArray[index] - systemData[index].equiDataVal);
 
         if (lineDistance < minDistance) {
             minDistance = lineDistance;
-            var yVal = tolData[index].tolVal;
-            var xVal = tolData[index].compVal;
+            var yVal = dataArray[index];
+            var xVal = systemData[index].equiDataVal;
         }
     }
     return {
@@ -336,32 +341,43 @@ function findIntersect(equiData, tolData) {
     }
 }
 
-function checkMinReflux(point, compData, qData) {
+function checkMinReflux(qPoint, tolPoint) {
+    var xDiff = Math.abs(qPoint.xOrdinate - tolPoint.xOrdinate)
+    var yDiff = Math.abs(qPoint.yOrdinate - tolPoint.yOrdinate)
 
-    var index = compData.indexOf(point.xOrdinate)
-    var qDistance = Math.abs(point.yOrdinate - qData[index])
-
-    if (point.xOrdinate > 0.4) {
-        var tolerance = 0.04
+    if (xDiff < 0.01 && yDiff < 0.01) {
+        return true
     } else {
-        var tolerance = 0.01
-    }
-
-    if (qDistance < tolerance) {
-        return true;
-    } else {
-        return false;
+        return false
     }
 }
 
+
+// Check if q-line passes through the tol-equilibrium intersect point
+// function checkMinReflux(point, compData, qData) {
+
+//     var index = compData.indexOf(point.xOrdinate)
+//     var qDistance = Math.abs(point.yOrdinate - qData[index])
+
+//     if (point.xOrdinate > 0.4) {
+//         var tolerance = 0.04
+//     } else {
+//         var tolerance = 0.01
+//     }
+
+//     if (qDistance < tolerance) {
+//         return true;
+//     } else {
+//         return false;
+//     }
+// }
+
+// Determine text to display
 function changeDisplayText(qVal, tolIntersect, atEdge) {
-    
     if (qVal < tolIntersect && !atEdge) {
         paragraph1.style.display = "block";
         paragraph2.style.display = "none";
         paragraph3.style.display = "none";
-
-        console.log("par 1 success")
     } else if (qVal > tolIntersect && !atEdge) {
         paragraph1.style.display = "none";
         paragraph2.style.display = "block";
