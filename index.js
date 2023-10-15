@@ -127,7 +127,6 @@ function updateTolLine(r, compVals, xD) {
 
         newData.push(newDataPoint);
     }
-
     return newData
 }
 
@@ -315,11 +314,6 @@ function sliderEventHandler() {
         .style("stroke", isGlowing ? "red" : "blue")
     
     changeDisplayText(qPos.yOrdinate, tolPos.yOrdinate, minReflux)
-
-    // var intersectIndex = compValArray.indexOf(intersectPoint.xOrdinate)
-
-    // var qPos = newQValArray[intersectIndex]
-    // var tolPos = newTolValArray[intersectIndex]
 };
 
 // Find where tol or q-line intersects equilibrium line
@@ -351,26 +345,6 @@ function checkMinReflux(qPoint, tolPoint) {
         return false
     }
 }
-
-
-// Check if q-line passes through the tol-equilibrium intersect point
-// function checkMinReflux(point, compData, qData) {
-
-//     var index = compData.indexOf(point.xOrdinate)
-//     var qDistance = Math.abs(point.yOrdinate - qData[index])
-
-//     if (point.xOrdinate > 0.4) {
-//         var tolerance = 0.04
-//     } else {
-//         var tolerance = 0.01
-//     }
-
-//     if (qDistance < tolerance) {
-//         return true;
-//     } else {
-//         return false;
-//     }
-// }
 
 // Determine text to display
 function changeDisplayText(qVal, tolIntersect, atEdge) {
