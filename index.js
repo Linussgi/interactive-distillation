@@ -1,4 +1,4 @@
-const margin = {top: 20, right: 50, bottom: 70, left: 80};
+const margin = { top: 20, right: 50, bottom: 70, left: 80 };
 const width = 800 - margin.left - margin.right;
 const height = 600 - margin.top - margin.bottom;
 
@@ -37,20 +37,20 @@ svg.append("g")
     .call(d3.axisBottom(xScale)
         .tickSize(-height)
         .tickFormat(""))
-        .selectAll(".tick line")
-        .attr("stroke-width", 0.5); 
+    .selectAll(".tick line")
+    .attr("stroke-width", 0.5);
 
 svg.append("g")
     .attr("class", "grid")
     .call(d3.axisLeft(yScale)
         .tickSize(-width)
         .tickFormat(""))
-        .selectAll(".tick line")
-        .attr("stroke-width", 0.5); 
+    .selectAll(".tick line")
+    .attr("stroke-width", 0.5);
 
 // Add xScale-axis
 svg.append("g")
-    .attr("transform", `translate(0, ${height})`) 
+    .attr("transform", `translate(0, ${height})`)
     .call(d3.axisBottom(xScale))
     .style("font-size", "16px");
 
@@ -61,29 +61,29 @@ svg.append("g")
 
 // Append xScale-axis label
 svg.append("text")
-   .attr("class", "xScale-axis-label")
-   .attr("x", width / 2)
-   .attr("y", height + margin.top + 30) 
-   .attr("text-anchor", "middle")
-   .style("font-size", "20px")
-   .text(xAxisName);
+    .attr("class", "xScale-axis-label")
+    .attr("x", width / 2)
+    .attr("y", height + margin.top + 30)
+    .attr("text-anchor", "middle")
+    .style("font-size", "20px")
+    .text(xAxisName);
 
 // Append yScale-axis label
 svg.append("text")
-   .attr("class", "yScale-axis-label")
-   .attr("transform", "rotate(-90)")
-   .attr("x", -height / 2)
-   .attr("y", -margin.left + 30) 
-   .attr("text-anchor", "middle")
-   .style("font-size", "20px")
-   .text(yAxisName);
+    .attr("class", "yScale-axis-label")
+    .attr("transform", "rotate(-90)")
+    .attr("x", -height / 2)
+    .attr("y", -margin.left + 30)
+    .attr("text-anchor", "middle")
+    .style("font-size", "20px")
+    .text(yAxisName);
 
 // Define clip path
 svg.append("defs").append("clipPath")
-   .attr("id", "chart-clip")
-   .append("rect")
-   .attr("width", width)
-   .attr("height", height);
+    .attr("id", "chart-clip")
+    .append("rect")
+    .attr("width", width)
+    .attr("height", height);
 
 // Create a group for the chart area with clipping
 var chartArea = svg.append("g")
@@ -97,8 +97,14 @@ const initialRefluxRatio = 0.5;
 const initialPurity = 0.9;
 const feedComp = 0.55;
 
+// function calculateEquilVal(comp) {
+//     return Math.pow(1 - Math.pow(comp - 1, 2), 0.5);
+// }
+
+const rv = 1.901
+
 function calculateEquilVal(comp) {
-    return Math.pow(1 - Math.pow(comp - 1, 2), 0.5);
+    return comp * rv / (1 + comp * (rv - 1));
 }
 
 function calculateTolVal(r, comp, xD) {
@@ -133,7 +139,7 @@ function updateTolLine(r, compVals, xD) {
 // Calculate new q-line line data when slider is changed
 function updateQLine(q, compVals, xF) {
     var newData = []
-    if (q == 1 || q == 0){
+    if (q == 1 || q == 0) {
         var offset = 0.0005
     } else {
         var offset = 0
@@ -172,24 +178,24 @@ const compValArray = initialData.map(dataPoint => dataPoint.compVal)
 
 // Define line functions
 var equiLine = d3.line()
-    .x(function (d) {return xScale(d.compVal)})
-    .y(function (d) {return yScale(d.equiDataVal)});
+    .x(function (d) { return xScale(d.compVal) })
+    .y(function (d) { return yScale(d.equiDataVal) });
 
 var line45Line = d3.line()
-    .x(function (d) {return xScale(d.compVal)})
-    .y(function (d) {return yScale(d.line45Val)});
+    .x(function (d) { return xScale(d.compVal) })
+    .y(function (d) { return yScale(d.line45Val) });
 
 var qLine = d3.line()
-    .x(function (d) {return xScale(d.compVal)})
-    .y(function (d) {return yScale(d.qLineVal)});
+    .x(function (d) { return xScale(d.compVal) })
+    .y(function (d) { return yScale(d.qLineVal) });
 
 var tolLine = d3.line()
-    .x(function (d) {return xScale(d.compVal)})
-    .y(function (d) {return yScale(d.tolVal)});
+    .x(function (d) { return xScale(d.compVal) })
+    .y(function (d) { return yScale(d.tolVal) });
 
 var bolLine = d3.line()
-    .x(function (d) {return xScale(d.compVal)})
-    .y(function (d) {return yScale(d.bolVal)});
+    .x(function (d) { return xScale(d.compVal) })
+    .y(function (d) { return yScale(d.bolVal) });
 
 // Add equilibrium line to chartArea
 chartArea.append("path")
@@ -197,7 +203,7 @@ chartArea.append("path")
     .attr("class", "equi-line")
     .attr("fill", "none")
     .style("stroke", "black")
-    .attr("stroke-width", 1.5) 
+    .attr("stroke-width", 1.5)
     .attr("d", equiLine);
 
 // Add 45-line to chartArea
@@ -225,7 +231,7 @@ chartArea.append("path")
     .attr("class", "tol-line")
     .attr("fill", "none")
     .style("stroke", "blue")
-    .style("stroke-dasharray", "10, 10")  
+    .style("stroke-dasharray", "10, 10")
     .attr("stroke-width", 2)
     .attr("d", tolLine);
 
@@ -247,7 +253,7 @@ var glowFilter = svg.append("defs")
     .attr("y", "-50%")
     .attr("width", "200%")
     .attr("height", "200%");
-    
+
 glowFilter.append("feGaussianBlur")
     .attr("stdDeviation", "3")
     .attr("result", "coloredBlur");
@@ -257,7 +263,7 @@ var feMerge = glowFilter.append("feMerge");
 feMerge.append("feMergeNode")
     .attr("in", "coloredBlur");
 feMerge.append("feMergeNode")
-    .attr("in", "SourceGraphic");    
+    .attr("in", "SourceGraphic");
 
 // Obtain slider information
 var qSlider = document.getElementById("q-slider");
@@ -272,6 +278,8 @@ var purityValueSpan = document.getElementById("purity-value");
 const paragraph1 = document.getElementById("paragraph1");
 const paragraph2 = document.getElementById("paragraph2");
 const paragraph3 = document.getElementById("paragraph3");
+
+var showQLine = true
 
 qSlider.addEventListener("input", sliderEventHandler);
 refluxSlider.addEventListener("input", sliderEventHandler);
@@ -299,28 +307,33 @@ function sliderEventHandler() {
     var minReflux = checkMinReflux(qPos, tolPos);
     var isGlowing = minReflux;
 
-    chartArea.select(".q-line")
-        .datum(newQLineData)
-        .attr("d", qLine);
+    if (showQLine == true) {
+        chartArea.select(".q-line")
+            .datum(newQLineData)
+            .attr("d", qLine);
 
-    chartArea.select(".equi-line")
-        .style("filter", isGlowing ? "url(#glow)" : "none")
-        .style("stroke", isGlowing ? "red" : "black")
-    
-    chartArea.select(".tol-line")
-        .datum(newTolLineData)
-        .attr("d", tolLine)
-        .style("filter", isGlowing ? "url(#glow)" : "none")
-        .style("stroke", isGlowing ? "red" : "blue")
-    
-    changeDisplayText(qPos.yOrdinate, tolPos.yOrdinate, minReflux)
+        chartArea.select(".equi-line")
+            .style("filter", isGlowing ? "url(#glow)" : "none")
+            .style("stroke", isGlowing ? "red" : "black")
+
+        chartArea.select(".tol-line")
+            .datum(newTolLineData)
+            .attr("d", tolLine)
+            .style("filter", isGlowing ? "url(#glow)" : "none")
+            .style("stroke", isGlowing ? "red" : "blue")
+
+        changeDisplayText(qPos.yOrdinate, tolPos.yOrdinate, minReflux)
+    } else {
+        chartArea.select(".q-line")
+            .remove()
+    }
 };
 
 // Find where tol or q-line intersects equilibrium line
 function findIntersect(systemData, dataArray) {
     var minDistance = 2;
 
-    for (let index = 0; index < systemData.length - 10; index++) { 
+    for (let index = 0; index < systemData.length - 10; index++) {
         var lineDistance = Math.abs(dataArray[index] - systemData[index].equiDataVal);
 
         if (lineDistance < minDistance) {
@@ -330,7 +343,7 @@ function findIntersect(systemData, dataArray) {
         }
     }
     return {
-        yOrdinate: yVal, 
+        yOrdinate: yVal,
         xOrdinate: xVal
     }
 }
@@ -344,6 +357,19 @@ function checkMinReflux(qPoint, tolPoint) {
     } else {
         return false
     }
+}
+
+function findEquilinePoint(purity, toldata, boldata, equildata, comp) {
+    var closestDistance = 2;
+
+    for (let point of equildata) {
+        if (point.equiDataVal - purity < closestDistance) {
+            closestDistance = point.equiDataVal;
+            var equiXVal = point.compVal
+        }
+    }
+
+
 }
 
 // Determine text to display
